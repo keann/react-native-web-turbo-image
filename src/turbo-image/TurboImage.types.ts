@@ -52,6 +52,7 @@ export type Placeholder = {
 }
 
 type TaskState = {
+    /** `'running'` in `onStart`, and `'completed'` in `onCompletion`. */
     state: State
 }
 
@@ -81,6 +82,7 @@ export type Success = {
 
 /** The `onFailure` payload. */
 export type Failure = {
+    /** The error message, which names the source that failed. */
     error: string
 }
 

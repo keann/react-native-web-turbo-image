@@ -30,20 +30,20 @@ the `play` function of every story in Chromium, through `@storybook/addon-vitest
 behavior is tested as a story. `smoke` renders the built `dist` and checks its JSX runtime and its
 declarations.
 
-Stories load images from the data URIs and canvases in `TurboImage.mocks.ts`, and a story that
-needs HTTP spies on `fetch`, so no test reaches the network. `TurboImage.types.test.ts` compares the
-types with upstream's. Vitest doesn't check types, so `bun check` is the run that fails on a
-mismatch.
+Stories load images from the data URIs and canvases in `TurboImage.mocks.ts`. A story about HTTP
+behaviour replaces `fetch` with a spy, so no test reaches the network. `TurboImage.types.test.ts`
+compares the types with upstream's. Vitest doesn't check types, so `bun check` is the run that
+fails on a mismatch.
 
 ## Imports and exports
 
 - Runtime code imports `react-native-web`, typed by `@types/react-native-web`. Types come from
   `react-native` with `import type`, as upstream's do, so the declarations match upstream's.
   `dist/index.js` never imports `react-native`, which is a dev dependency for its types only.
-- Code under `src/` never imports `react-native-turbo-image`, except stories in `docs/` folders.
+- Code under `src/` never imports `react-native-turbo-image`, except files in `docs/` folders.
   An app's alias resolves that import to this package, so the package would import itself.
-  Storybook and `tsconfig.json` map the name to `src/index.ts`, so stories import the package the
-  way an app does.
+  Storybook and `tsconfig.json` map the name to `src/index.ts`, so stories and their demo helpers
+  import the package the way an app does.
 - The package root has a default export, unlike the rest of the code, because
   `react-native-turbo-image` exports its component as the default. The root mirrors its exports
   and adds no named twin.

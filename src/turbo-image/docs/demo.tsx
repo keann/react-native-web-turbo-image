@@ -1,4 +1,4 @@
-import { Component, type ReactNode, useState } from 'react'
+import { type ReactNode, Component, useState } from 'react'
 import TurboImage, { type TurboImageProps } from 'react-native-turbo-image'
 import { Pressable, Text, View } from 'react-native-web'
 
@@ -59,10 +59,26 @@ export class Boundary extends Component<
     }
 }
 
-export const LoggedTurboImage = (props: TurboImageProps & { testID: string }) => {
-    const { onCompletion, onFailure, onProgress, onStart, onSuccess, testID } = props
+/** An append-only log: its lines, and the function that adds one. */
+export const useLog = () => {
     const [lines, setLines] = useState<string[]>([])
     const log = (line: string) => setLines(previous => [...previous, line])
+
+    return { lines, log }
+}
+
+export const Log = ({ lines, testID }: { lines: string[]; testID: string }) => (
+    <View testID={testID}>
+        {lines.map((line, index) => (
+            // oxlint-disable-next-line react/no-array-index-key -- the log only appends
+            <Label key={index}>{line}</Label>
+        ))}
+    </View>
+)
+
+export const LoggedTurboImage = (props: TurboImageProps & { testID: string }) => {
+    const { onCompletion, onFailure, onProgress, onStart, onSuccess, testID } = props
+    const { lines, log } = useLog()
 
     return (
         <View style={{ gap: 6 }}>
@@ -96,12 +112,7 @@ export const LoggedTurboImage = (props: TurboImageProps & { testID: string }) =>
                     onSuccess?.(event)
                 }}
             />
-            <View testID={`${testID}-log`}>
-                {lines.map((line, index) => (
-                    // oxlint-disable-next-line react/no-array-index-key -- the log only appends
-                    <Label key={index}>{line}</Label>
-                ))}
-            </View>
+            <Log lines={lines} testID={`${testID}-log`} />
         </View>
     )
 }

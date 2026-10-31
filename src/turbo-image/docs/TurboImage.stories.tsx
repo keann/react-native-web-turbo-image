@@ -5,8 +5,9 @@ import { expect, fn, spyOn, waitFor } from 'storybook/test'
 
 import preview from '../../../.storybook/preview'
 
-import { Boundary, Button, Case, Label, LoggedTurboImage, Row, shortUri } from './demo'
+import { Boundary, Button, Case, Label, Log, LoggedTurboImage, Row, shortUri, useLog } from './demo'
 import { logLines, turboImageParts } from './queries'
+import { a11yArgTypes, eventsArgTypes, hideArgTypes, systemArgTypes } from './TurboImage.argTypes'
 import {
     BROKEN_URI,
     SAMPLE_BLURHASH,
@@ -21,7 +22,7 @@ import {
  * What a static method resolves.
  * Upstream types the clearing ones as `void`, and they resolve `'Success'`.
  */
-const resolved = (promise: Promise<unknown>) => promise.then(String)
+const resultText = (promise: Promise<unknown>) => promise.then(String)
 
 const SQUARE_STYLE = { backgroundColor: '#222', height: 200, width: 200 } as const
 
@@ -38,6 +39,7 @@ const SAMPLE_SUCCESS = `onSuccess ${SAMPLE_SIZE.width}x${SAMPLE_SIZE.height} ${s
 const meta = preview.meta({
     title: 'Components/TurboImage',
     component: TurboImage,
+    argTypes: { ...a11yArgTypes, ...eventsArgTypes, ...systemArgTypes },
     args: {
         onCompletion: fn(),
         onFailure: fn(),
@@ -109,6 +111,9 @@ export const ResizeMode = meta.story({
  * at the edges where native clamps. `rounded` rounds the wrapper, where native crops the bitmap
  * itself, which shows with `contain`.
  *
+ * `monochrome` blends a copy of the image tinted to its colour, so the letterbox and transparent
+ * pixels keep their colour.
+ *
  * Colours take a CSS colour or the packed ARGB number that `processColor` makes.
  */
 export const Rendering = meta.story({
@@ -123,8 +128,13 @@ export const Rendering = meta.story({
             <Case title="tint='#6f4bd8'">
                 <TurboImage {...args} testID="rendering-tint" tint="#6f4bd8" />
             </Case>
-            <Case title="monochrome={0xff41b3a3}">
-                <TurboImage {...args} monochrome={0xff_41_b3_a3} testID="rendering-monochrome" />
+            <Case title="monochrome={0xff41b3a3}, in a square">
+                <TurboImage
+                    {...args}
+                    monochrome={0xff_41_b3_a3}
+                    style={SQUARE_STYLE}
+                    testID="rendering-monochrome"
+                />
             </Case>
             <Case title="rounded">
                 <TurboImage
@@ -145,9 +155,15 @@ export const Rendering = meta.story({
         await expect(getComputedStyle(parts('rendering-blur').painter).filter).toBe('blur(8px)')
         await expect(getComputedStyle(parts('rendering-tint').painter).filter).toMatch(/^url\(/u)
 
+        // A tinted copy of the image: the blend covers its pixels and leaves the letterbox alone.
         const overlay = parts('rendering-monochrome').layer.lastElementChild as HTMLElement
+        await waitFor(() => expect(overlay.querySelector('img')).toHaveAttribute('src', SAMPLE_URI))
         await expect(getComputedStyle(overlay).mixBlendMode).toBe('color')
-        await expect(getComputedStyle(overlay).backgroundColor).toBe('rgb(65, 179, 163)')
+        await expect(getComputedStyle(overlay).backgroundColor).toBe('rgba(0, 0, 0, 0)')
+        await expect(overlay.querySelector('feFlood')).toHaveAttribute(
+            'flood-color',
+            'rgba(65, 179, 163, 1)',
+        )
 
         const radius = getComputedStyle(parts('rendering-rounded').root).borderTopLeftRadius
         await expect(Number.parseFloat(radius)).toBeGreaterThan(1_000_000)
@@ -710,9 +726,8 @@ export const Invariants = meta.story({
  */
 export const Statics = meta.story({
     render: function Render(args) {
-        const [lines, setLines] = useState<string[]>([])
+        const { lines, log } = useLog()
         const [generation, setGeneration] = useState(0)
-        const log = (line: string) => setLines(previous => [...previous, line])
         const remount = () => setGeneration(value => value + 1)
 
         return (
@@ -739,7 +754,7 @@ export const Statics = meta.story({
                     <Button
                         onPress={async () => {
                             log(
-                                `clearMemoryCache → ${await resolved(TurboImage.clearMemoryCache())}`,
+                                `clearMemoryCache → ${await resultText(TurboImage.clearMemoryCache())}`,
                             )
                             remount()
                         }}
@@ -747,7 +762,7 @@ export const Statics = meta.story({
                     />
                     <Button
                         onPress={async () => {
-                            log(`clearDiskCache → ${await resolved(TurboImage.clearDiskCache())}`)
+                            log(`clearDiskCache → ${await resultText(TurboImage.clearDiskCache())}`)
                         }}
                         title="clearDiskCache"
                     />
@@ -771,12 +786,7 @@ export const Statics = meta.story({
                             testID="statics-key"
                         />
                     </Case>
-                    <View testID="statics-log">
-                        {lines.map((line, index) => (
-                            // oxlint-disable-next-line react/no-array-index-key -- append-only log
-                            <Label key={index}>{line}</Label>
-                        ))}
-                    </View>
+                    <Log lines={lines} testID="statics-log" />
                 </Row>
             </View>
         )
@@ -826,15 +836,27 @@ export const Statics = meta.story({
  * accepts and ignores them.
  */
 export const ViewProps = meta.story({
-    args: {
-        accessibilityLabel: 'A sunset over two mountains',
-        allowHardware: false,
-        cachePolicy: 'dataCache',
-        enableLiveTextInteraction: true,
-        format: 'gif',
-        isProgressiveImageRenderingEnabled: false,
-        resize: 100,
-    },
+    argTypes: hideArgTypes(
+        'accessibilityLabel',
+        'allowHardware',
+        'cachePolicy',
+        'enableLiveTextInteraction',
+        'format',
+        'isProgressiveImageRenderingEnabled',
+        'resize',
+    ),
+    render: args => (
+        <TurboImage
+            {...args}
+            accessibilityLabel="A sunset over two mountains"
+            allowHardware={false}
+            cachePolicy="dataCache"
+            enableLiveTextInteraction
+            format="gif"
+            isProgressiveImageRenderingEnabled={false}
+            resize={100}
+        />
+    ),
     play: async ({ canvasElement }) => {
         const { image, root } = turboImageParts(canvasElement, 'image')
         await waitFor(() => expect(image.querySelector('img')).not.toBeNull())

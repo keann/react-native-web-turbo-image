@@ -65,7 +65,8 @@ describe('dist', () => {
 
         expect(code).toContain('react/jsx-runtime')
         expect(code).not.toContain('jsx-dev-runtime')
-        expect(code).not.toMatch(/from\s*["']react-native["']/u)
+        // Any import names the package as a string: a static import, a dynamic one, or `require`.
+        expect(code).not.toMatch(/["']react-native["']/u)
     })
 
     it('declares the default export and the type names of react-native-turbo-image', async () => {

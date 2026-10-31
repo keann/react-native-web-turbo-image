@@ -1,5 +1,5 @@
 import { type FC, type ForwardedRef, forwardRef, useMemo } from 'react'
-import { ActivityIndicator, Image, type ImageProps, View } from 'react-native-web'
+import { type ImageProps, ActivityIndicator, Image, View } from 'react-native-web'
 
 import { DEFAULT_FADE_DURATION_MS, DEFAULT_RESIZE_MODE } from './constants/defaults'
 import { toCssColor } from './helpers/cssColor'
@@ -90,6 +90,12 @@ const TurboImageView = (
         indicator !== undefined &&
         Object.keys(indicator).length > 0
 
+    // react-native-web takes react-native's view props.
+    const innerImageProps = imageProps as ImageProps
+    // The source stays unset until the image loads, because react-native-web reports an
+    // error for an empty URI.
+    const imageSource = state.phase === 'loaded' ? { uri: state.image.uri } : undefined
+
     return (
         <View ref={ref} style={[styles.root, style, rounded === true && styles.rounded]}>
             {isPlaceholderShown ? (
@@ -109,19 +115,20 @@ const TurboImageView = (
             ) : null}
             <View style={[styles.imageLayer, fadeStyle]}>
                 <Image
-                    // react-native-web takes react-native's view props.
-                    {...(imageProps as ImageProps)}
+                    {...innerImageProps}
                     blurRadius={blur}
                     resizeMode={resizeMode}
-                    // The source stays unset until the image loads:
-                    // react-native-web reports an error for an empty URI.
-                    source={state.phase === 'loaded' ? { uri: state.image.uri } : undefined}
+                    source={imageSource}
                     style={styles.image}
                     tintColor={toCssColor(tint)}
                 />
                 {monochrome === undefined ? null : (
-                    <View
-                        style={[styles.monochrome, { backgroundColor: toCssColor(monochrome) }]}
+                    <Image
+                        blurRadius={blur}
+                        resizeMode={resizeMode}
+                        source={imageSource}
+                        style={styles.monochrome}
+                        tintColor={toCssColor(monochrome)}
                     />
                 )}
             </View>

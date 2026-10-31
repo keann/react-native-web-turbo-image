@@ -107,8 +107,8 @@ knows the prefix.
 ## Behaviour on web
 
 The component follows upstream's TypeScript, Swift, and Kotlin sources. Where iOS and Android
-differ, it follows one of them, and where a browser can't do what a device does, it does the
-nearest thing.
+differ, it follows one of them. Where a browser has no API for what a device does, it uses CSS or
+`fetch` instead, and the browser limits below list what changes.
 
 ### Matches native
 
@@ -122,7 +122,7 @@ It renders as upstream does:
 - `rounded`, `blur`, `tint`, and `monochrome` style the image.
 - `indicator` shows while the image loads, unless a placeholder shows. `indicator={{}}` shows
   nothing.
-- `fadeDuration` fades the image in, and a `placeholder` sets it to 0.
+- `fadeDuration` fades the image in.
 
 It loads as upstream does:
 
@@ -142,6 +142,8 @@ It loads as upstream does:
 These follow one platform:
 
 - `fadeDuration` defaults to 300 ms, as on iOS. Android's default is 100 ms.
+- A `placeholder` turns the fade off, as on iOS. Android turns off only its default fade, and only
+  for a blurhash or thumbhash placeholder.
 - `onSuccess` reports the image's intrinsic size in pixels, as on iOS. Android reports the size it
   decoded to, which follows the view's size.
 - An empty or blank `source.uri` fires `onFailure` and then `onCompletion`, with no `onStart`, as
@@ -155,9 +157,9 @@ These follow one platform:
 These are browser limits:
 
 - Only `fetch` sends headers and counts bytes, so `source.headers` or an `onProgress` listener
-  load the image with `fetch`, which CORS applies to. When CORS or the network rejects it, the image
-  loads through an `<img>` that sends no headers and reports no progress, and the console warns
-  once for that URL.
+  load the image with `fetch`. CORS applies to `fetch`. When CORS or the network rejects the
+  request, the image loads through an `<img>`, which sends no headers and reports no progress. The
+  console warns once for each such URL.
 - Every load fires `onStart`, and fades in unless a placeholder is set. On a device, a memory cache
   hit skips the fade, and on iOS it skips `onStart` too. Here the memory cache only feeds
   placeholders, and the browser's HTTP cache serves repeated loads.

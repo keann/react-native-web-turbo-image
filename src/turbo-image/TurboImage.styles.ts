@@ -25,9 +25,10 @@ export default {
         isolation: 'isolate',
     },
     image: fill,
+    // A tinted copy of the image, so the blend covers its pixels only: Android's `BlendMode.COLOR`
+    // keeps their luminosity and takes the colour's hue and saturation.
     monochrome: {
         ...fill,
-        // Android's `BlendMode.COLOR`: the image's luminosity with the colour's hue and saturation.
         mixBlendMode: 'color',
     },
 } satisfies Record<string, ViewStyle>
