@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
 import TurboImage from 'react-native-turbo-image'
 import { expect, fn, waitFor } from 'storybook/test'
+
+import preview from '../../../.storybook/preview'
 
 /**
  * A 7 by 3 pixel SVG, so the story loads without the network. Base64, because react-native-web
@@ -11,7 +12,7 @@ const SAMPLE_URI = `data:image/svg+xml;base64,${btoa(
 )}`
 
 /** **TurboImage** for react-native-web. This placeholder renders react-native-web's `Image`. */
-export default {
+const meta = preview.meta({
     title: 'Components/TurboImage',
     component: TurboImage,
     args: {
@@ -19,12 +20,10 @@ export default {
         style: { width: 140, height: 60 },
         onLoad: fn(),
     },
-} satisfies Meta<typeof TurboImage>
+})
 
-type Story = StoryObj<typeof TurboImage>
-
-export const Sandbox: Story = {
+export const Sandbox = meta.story({
     play: async ({ args }) => {
         await waitFor(() => expect(args.onLoad).toHaveBeenCalledOnce())
     },
-}
+})

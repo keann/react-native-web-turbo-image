@@ -1,9 +1,9 @@
 import { fileURLToPath } from 'node:url'
 
-import type { StorybookConfig } from '@storybook/react-vite'
+import { defineMain } from '@storybook/react-vite/node'
 import { mergeConfig } from 'vite'
 
-const config: StorybookConfig = {
+export default defineMain({
     stories: ['../src/**/*.stories.tsx'],
     framework: '@storybook/react-vite',
     addons: ['@storybook/addon-vitest'],
@@ -32,6 +32,4 @@ const config: StorybookConfig = {
                 ],
             },
         }),
-}
-
-export default config
+})
