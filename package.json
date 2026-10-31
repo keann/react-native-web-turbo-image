@@ -64,5 +64,5 @@
     "react": ">=18",
     "react-native-web": ">=0.19"
   },
-  "packageManager": "bun@1.4.4-canary.20261022.1"
+  "packageManager": "bun@1.4.4-canary.20261030.1"
 }
