@@ -1,0 +1,68 @@
+{
+  "name": "react-native-web-turbo-image",
+  "version": "0.0.0",
+  "description": "react-native-turbo-image for react-native-web",
+  "keywords": [
+    "image",
+    "polyfill",
+    "react-native",
+    "react-native-turbo-image",
+    "react-native-web"
+  ],
+  "homepage": "https://github.com/keann/react-native-web-turbo-image#readme",
+  "bugs": "https://github.com/keann/react-native-web-turbo-image/issues",
+  "license": "MIT",
+  "author": {
+    "name": "Alex K.",
+    "email": "code@keann.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keann/react-native-web-turbo-image.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "build:storybook": "storybook build",
+    "prepublishOnly": "bun run build && bun run test:unit && bun run test:stories && bun run test:smoke",
+    "storybook": "storybook dev --port 6006",
+    "test:smoke": "vitest run --project smoke",
+    "test:stories": "vitest run --project stories",
+    "test:unit": "vitest run --project unit --passWithNoTests"
+  },
+  "devDependencies": {
+    "@keann/lint-config": "1.0.0",
+    "@storybook/addon-vitest": "11.0.0-alpha.8",
+    "@storybook/react-vite": "11.0.0-alpha.8",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/react-native-web": "0.19.3",
+    "@vitest/browser": "5.0.5",
+    "@vitest/browser-playwright": "5.0.5",
+    "eslint": "10.14.0",
+    "playwright": "1.64.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-native-web": "0.21.4",
+    "storybook": "11.0.0-alpha.8",
+    "tsdown": "0.23.4",
+    "typescript": "6.0.3",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native-web": ">=0.19"
+  },
+  "packageManager": "bun@1.4.4-canary.20261030.1"
+}

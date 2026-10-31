@@ -1,0 +1,36 @@
+name: CI
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    checks:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Install the Bun from packageManager
+              run: npm install --global "$(jq -r .packageManager package.json)"
+
+            - run: bun install --frozen-lockfile
+            - run: bun fmt --check
+            - run: bun lint
+            - run: bun check
+            - run: bun run test:unit
+
+            - name: Install Chromium for the story tests
+              run: bunx playwright install --with-deps chromium
+
+            - run: bun run test:stories
+            - run: bun run build
+            - run: bun run test:smoke
+            - run: bun run build:storybook
