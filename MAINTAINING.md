@@ -35,6 +35,11 @@ exact versions, and every check in `AGENTS.md` runs after a bump.
 - `playwright` sets the Chromium build. `bunx playwright install chromium` installs the matching
   build after a bump.
 - `typescript` stays on 6, because tsdown writes the declarations with its compiler API.
+- `react-native-turbo-image-upstream` is upstream's package under another name, and
+  `TurboImage.types.ts` copies its types. A bump updates the copy and the component to the new
+  version, and `bun check` fails until the two match.
+- `react-native` is a dev dependency for the types only. Apps resolve the declarations against
+  their own `react-native`.
 - `packageManager` pins the Bun canary that `bun lint` needs. CI installs that exact build from
   npm.
 

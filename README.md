@@ -30,7 +30,8 @@ react-native-web.
 bun add -dE react-native-web-turbo-image
 ```
 
-The peers are `react` 18 or newer and `react-native-web` 0.19 or newer.
+The peers are `react` 18 or newer and `react-native-web` 0.19 or newer. Its dependencies,
+`blurhash` and `thumbhash`, decode the placeholders.
 
 ### Vite and Vitest
 
@@ -90,7 +91,96 @@ export const Avatar = () => (
 ```
 
 The import stays `react-native-turbo-image`, and the alias resolves it on web. TypeScript still
-reads the types from the `react-native-turbo-image` package that the native app installs.
+reads the types from the `react-native-turbo-image` package that the native app installs. This
+package declares the same types, and imports the React Native ones from `react-native`.
+
+### Holding the loading state
+
+```tsx
+<TurboImage source={{ uri: 'pending:avatar' }} style={{ width: 48, height: 48 }} />
+```
+
+A `source.uri` that starts with `pending:` fires `onStart` and never settles. A story or a test can
+show the loading state with it, without depending on how fast the network is. Only this package
+knows the prefix.
+
+## Behaviour on web
+
+The component follows upstream's TypeScript, Swift, and Kotlin sources. Where iOS and Android
+differ, it follows one of them, and where a browser can't do what a device does, it does the
+nearest thing.
+
+### Matches native
+
+It renders as upstream does:
+
+- A clipping `View` takes `style` and the `ref`, and the image inside fills it. The other view and
+  accessibility props, `testID` included, go to the inner image.
+- More than one `placeholder` key throws upstream's error from render, and so does
+  `showPlaceholderOnFailure` without a `placeholder`.
+- `resizeMode` defaults to `contain`.
+- `rounded`, `blur`, `tint`, and `monochrome` style the image.
+- `indicator` shows while the image loads, unless a placeholder shows. `indicator={{}}` shows
+  nothing.
+- `fadeDuration` fades the image in, and a `placeholder` sets it to 0.
+
+It loads as upstream does:
+
+- The events fire in upstream's order with its payloads: `onStart`, `onProgress` after each chunk,
+  `onSuccess` or `onFailure`, and `onCompletion` after either one.
+- `onProgress` reports a `total` of -1 when the response has no `Content-Length`, as OkHttp does
+  on Android.
+- `source.headers` go with the request, and `source.cacheKey` keys the memory cache that
+  `placeholder.memoryCacheKey` reads.
+- `placeholder.blurhash` and `placeholder.thumbhash` decode to an image, and a malformed hash shows
+  no placeholder. `showPlaceholderOnFailure` keeps the placeholder after a failure.
+- `prefetch` loads each source into the memory cache under its URL, and ignores `source.cacheKey`.
+- `dispose` rejects with a `TypeError`, because neither native module implements it.
+
+### Differs from native
+
+These follow one platform:
+
+- `fadeDuration` defaults to 300 ms, as on iOS. Android's default is 100 ms.
+- `onSuccess` reports the image's intrinsic size in pixels, as on iOS. Android reports the size it
+  decoded to, which follows the view's size.
+- An empty or blank `source.uri` fires `onFailure` and then `onCompletion`, with no `onStart`, as
+  on Android. iOS fires only `onFailure`.
+- `resizeMode="center"` scales a larger image down to fit, as on Android. iOS keeps its natural
+  size, and the wrapper clips it.
+- `showPlaceholderOnFailure={false}` shows no placeholder after a failure, as on iOS. Android shows
+  it whenever the prop is set.
+- `onProgress` repeats its last event when the response ends, as on Android.
+
+These are browser limits:
+
+- Only `fetch` sends headers and counts bytes, so `source.headers` or an `onProgress` listener
+  load the image with `fetch`, which CORS applies to. When CORS or the network rejects it, the image
+  loads through an `<img>` that sends no headers and reports no progress, and the console warns
+  once for that URL.
+- Every load fires `onStart`, and fades in unless a placeholder is set. On a device, a memory cache
+  hit skips the fade, and on iOS it skips `onStart` too. Here the memory cache only feeds
+  placeholders, and the browser's HTTP cache serves repeated loads.
+- A change to `blur`, `tint`, or `monochrome` alone restyles the image and fires no events. A
+  device loads the image again to apply them.
+- `blur` is a CSS `filter`, which softens the image's edges. The native blurs clamp at the edges.
+- `rounded` rounds the wrapper. A device crops the bitmap to a circle, which looks different with
+  `resizeMode="contain"`.
+
+### Accepted but inert
+
+These props type-check and do nothing on web:
+
+- `cachePolicy`, because the browser owns HTTP caching.
+- `format`, because browsers detect SVG, GIF, and APNG themselves.
+- `resize`, which only limits the size a device decodes to.
+- `allowHardware`, an Android bitmap setting.
+- `enableLiveTextInteraction` and `isProgressiveImageRenderingEnabled`, which are iOS only.
+- `children`, which react-native-web's `Image` throws on.
+
+`clearDiskCache` resolves `'Success'` and clears nothing, for the same reason as `cachePolicy`. A
+load keeps running while the page is hidden, where iOS cancels it in the background and Android
+disposes of it on pause.
 
 ## Development
 
