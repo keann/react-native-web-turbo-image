@@ -17,6 +17,13 @@ in for `react-native-turbo-image` in web builds, and app code keeps importing
 > `react-native-turbo-image` API broadly, so components built on it render and behave on web. Most
 > of it is vibe-coded: it does the job, but it won't win any benchmarks.
 
+## Why
+
+`react-native-turbo-image` renders native iOS and Android views and has no web build. Aliasing it
+to react-native's `Image` renders the picture, but drops the placeholders, the load events, and the
+static cache methods that components built on it use. This package implements those on
+react-native-web.
+
 ## Setup
 
 ```sh
