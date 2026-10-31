@@ -17,6 +17,21 @@ in for `react-native-turbo-image` in web builds, and app code keeps importing
 > `react-native-turbo-image` API broadly, so components built on it render and behave on web. Most
 > of it is vibe-coded: it does the job, but it won't win any benchmarks.
 
+## Contents
+
+- [Why](#why)
+- [Setup](#setup)
+    - [Vite and Vitest](#vite-and-vitest)
+    - [Storybook](#storybook)
+- [Versions](#versions)
+- [Usage](#usage)
+    - [Holding the loading state](#holding-the-loading-state)
+- [Behaviour on web](#behaviour-on-web)
+    - [Matches native](#matches-native)
+    - [Differs from native](#differs-from-native)
+    - [Accepted but inert](#accepted-but-inert)
+- [Development](#development)
+
 ## Why
 
 `react-native-turbo-image` renders native iOS and Android views and has no web build. Aliasing it
@@ -76,6 +91,14 @@ export default defineMain({
 
 `@storybook/react-native-web-vite` aliases `react-native` itself and needs only the
 `react-native-turbo-image` entry.
+
+## Versions
+
+Each release implements the API of one `react-native-turbo-image` version.
+
+| react-native-web-turbo-image | react-native-turbo-image |
+| ---------------------------- | ------------------------ |
+| 1.0.0                        | 1.24.3                   |
 
 ## Usage
 

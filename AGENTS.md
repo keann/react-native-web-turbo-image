@@ -55,7 +55,7 @@ fails on a mismatch.
   checker.
 - Every `storybook` and `@storybook/*` package is on the same exact version. Bump them together.
 - `react-native-turbo-image-upstream` aliases the upstream version that `TurboImage.types.ts`
-  copies. Bump it together with that copy.
+  copies. Bump it together with that copy and the Versions table in `README.md`.
 
 ## Release notes
 

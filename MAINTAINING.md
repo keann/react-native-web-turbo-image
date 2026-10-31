@@ -37,7 +37,8 @@ exact versions, and every check in `AGENTS.md` runs after a bump.
 - `typescript` stays on 6, because tsdown writes the declarations with its compiler API.
 - `react-native-turbo-image-upstream` is upstream's package under another name, and
   `TurboImage.types.ts` copies its types. A bump updates the copy and the component to the new
-  version, and `bun check` fails until the two match.
+  version, and `bun check` fails until the two match. The release that ships it adds a row to the
+  README's Versions table.
 - `react-native` is a dev dependency for the types only. Apps resolve the declarations against
   their own `react-native`.
 - `packageManager` pins the Bun canary that `bun lint` needs. CI installs that exact build from
