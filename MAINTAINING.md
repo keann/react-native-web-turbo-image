@@ -24,21 +24,6 @@ The version reaches npm before the commit, so a declined approval leaves `main` 
 approval after the hour fails step 4, and re-running the run's failed jobs finishes the release.
 The staging step stays in `release.yml`, because npm's trusted publisher names that file.
 
-## Repo setup for the first release
-
-1. Create the `no changelog` label under Issues → Labels.
-2. Create the `npm` environment under Settings → Environments, with the maintainer as its required
-   reviewer.
-3. Add a granular npm token with publish access as the environment secret `NPM_TOKEN`. Staged
-   publishing creates the package on npm from it.
-4. Set Settings → Pages → Source to GitHub Actions. The Release run deploys to the `github-pages`
-   environment that this creates.
-
-Before the second release, add a trusted publisher on npmjs.com for `release.yml` and the `npm`
-environment, delete the token and its secret, and drop the `NODE_AUTH_TOKEN` line from
-`release.yml`. npm drops a trusted publisher that publishes nothing within 48 hours, so it is added
-on the day of that release.
-
 ## Bumping dependencies
 
 Dependabot bumps only the pinned GitHub Actions. The npm dependencies are bumped by hand, with

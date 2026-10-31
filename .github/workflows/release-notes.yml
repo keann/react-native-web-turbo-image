@@ -16,8 +16,6 @@ jobs:
               with:
                   fetch-depth: 0
 
-            # The published package changes with src/ outside the stories' docs/ folders, and with
-            # the dependencies in package.json.
             - name: Require an UNRELEASED.md entry for changes to the published package
               env:
                   BASE: ${{ github.event.pull_request.base.sha }}
